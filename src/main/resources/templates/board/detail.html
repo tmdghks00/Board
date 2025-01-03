@@ -12,19 +12,12 @@
         <div class="card-body">
             <h5 class="card-title" th:text="${post.title + ' - ' + post.author}"></h5>
             <p class="card-text">
-                <small
-                        class="text-muted"
-                        th:text="${#temporals.format(post.createdDate, 'yyyy-MM-dd HH:mm')}"
-                ></small>
+                <small class="text-muted" th:text="${#temporals.format(post.createdDate, 'yyyy-MM-dd HH:mm')}"></small>
             </p>
             <p class="card-text" th:text="${post.content}"></p>
             <div th:if="${post.fileDto != null}">
                 <strong>첨부파일 : </strong>
-                <a
-                        class="card-text"
-                        th:href="@{'/download/' + ${post.fileDto.id}}"
-                        th:text="${post.fileDto.origFilename}"
-                ></a>
+                <a class="card-text" th:href="@{'/download/' + ${post.fileDto.id}}" th:text="${post.fileDto.origFilename}"></a>
             </div>
         </div>
     </div>
@@ -40,8 +33,53 @@
             </form>
         </div>
     </div>
+    <!-- 좋아요 버튼 수정 -->
+    <div class="row mt-3">
+        <div class="col-auto">
+            <button id="likeButton" class="btn btn-primary" th:data-id="${post.id}">
+                좋아요 <span id="likeCount" th:text="${post.likeCount}" class="badge badge-light"></span>
+            </button>
+        </div>
+    </div>
+    <!-- 댓글 목록 -->
+    <div class="mt-4">
+        <h4>댓글</h4>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item" th:each="comment : ${comments}">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1" th:text="${comment.author}"></h5>
+                    <small th:text="${#temporals.format(comment.createdDate, 'yyyy-MM-dd HH:mm')}"></small>
+                </div>
+                <p class="mb-1" th:text="${comment.content}"></p>
+            </li>
+        </ul>
+    </div>
+    <!-- 댓글 작성 폼 -->
+    <div class="mt-3">
+        <form th:action="@{'/post/' + ${post.id} + '/comment'}" method="post">
+            <div class="form-group">
+                <label for="commentAuthor">작성자</label>
+                <input type="text" class="form-control" id="commentAuthor" name="author" required>
+            </div>
+            <div class="form-group">
+                <label for="commentContent">내용</label>
+                <textarea class="form-control" id="commentContent" name="content" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">댓글 작성</button>
+        </form>
+    </div>
 </div>
 <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
 <script src="/webjars/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#likeButton').click(function() {
+            var postId = $(this).data('id');
+            $.post('/post/' + postId + '/like', function(response) {
+                $('#likeCount').text(response);
+            });
+        });
+    });
+</script>
 </body>
 </html>

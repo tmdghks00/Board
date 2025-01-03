@@ -8,8 +8,13 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.example.communityboard.domain.entity.Comment;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -33,6 +38,12 @@ public class Board {
     @Column
     private Long fileId;
 
+    @Column
+    private Integer likeCount = 0;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdDate;
@@ -48,4 +59,36 @@ public class Board {
         this.content = content; // 내용 초기화
         this.fileId = fileId; // 첨부파일 ID 초기화
     }
+
+    public void incrementLikeCount() {
+        if (this.likeCount == null) {
+            this.likeCount = 1;
+        } else {
+            this.likeCount++;
+        }
+    }
+
+    @ElementCollection
+    @CollectionTable(name = "board_likes", joinColumns = @JoinColumn(name = "board_id"))
+    @Column(name = "user_id")
+    private Set<String> likedUsers = new HashSet<>();
+
+    public boolean toggleLike(String userId) {
+        if (likedUsers.contains(userId)) {
+            likedUsers.remove(userId);
+            if (likeCount > 0) likeCount--;
+            return false;
+        } else {
+            likedUsers.add(userId);
+            if (likeCount == null) likeCount = 1;
+            else likeCount++;
+            return true;
+        }
+    }
+
+    public int getLikeCount() {
+        return likeCount == null ? 0 : likeCount;
+    }
+
+
 }

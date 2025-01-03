@@ -2,12 +2,17 @@ package com.example.communityboard.controller;
 
 // 필요한 클래스 임포트
 import com.example.communityboard.dto.BoardDto;
+import com.example.communityboard.dto.CommentDto;
 import com.example.communityboard.dto.FileDto;
 import com.example.communityboard.service.BoardService;
+import com.example.communityboard.service.CommentService;
 import com.example.communityboard.service.FileService;
 import com.example.communityboard.util.MD5Generator;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +20,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.servlet.http.HttpSession;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,19 +36,22 @@ public class BoardController {
     // 서비스 클래스의 인스턴스를 주입받기 위한 필드
     private final BoardService boardService; // 게시판 관련 서비스
     private final FileService fileService;   // 파일 관련 서비스
+    private final CommentService commentService;
+
 
     // 생성자 주입을 통해 서비스 인스턴스를 초기화
-    public BoardController(BoardService boardService, FileService fileService) {
-        this.boardService = boardService; // 게시판 서비스 초기화
-        this.fileService = fileService;     // 파일 서비스 초기화
+    public BoardController(BoardService boardService, FileService fileService, CommentService commentService) {
+        this.boardService = boardService;
+        this.fileService = fileService;
+        this.commentService = commentService;
     }
 
-    // 게시판 목록 조회: 루트 URL이나 "/boards"로 접근 시 호출됨
+    // 게시판 목록 조회 (페이징 적용)
     @GetMapping({"", "/", "/boards"})
-    public String list(Model model) {
-        List<BoardDto> boardDtoList = boardService.getBoardList(); // 게시글 목록 가져오기
-        model.addAttribute("postList", boardDtoList); // 모델에 게시글 목록 추가
-        return "board/list.html"; // 게시글 목록 뷰 반환
+    public String list(Model model, @PageableDefault(size = 10) Pageable pageable) {
+        Page<BoardDto> boardDtoPage = boardService.getBoardList(pageable);
+        model.addAttribute("postList", boardDtoPage);
+        return "board/list.html";
     }
 
     // 게시글 작성 페이지로 이동
@@ -81,13 +91,23 @@ public class BoardController {
         return "redirect:/"; // 작성 후 루트 URL로 리다이렉트
     }
 
-    // 게시글 상세 조회: 특정 ID의 게시글을 조회하여 상세 정보를 반환함
+    // 게시글 상세 조회 (댓글 목록 포함)
     @GetMapping("/post/{id}")
     public String detail(@PathVariable("id") Long id, Model model) {
-        BoardDto boardDto = boardService.getPost(id); // ID로 게시글 정보 가져오기
-        model.addAttribute("post", boardDto); // 모델에 게시글 정보 추가
-        model.addAttribute("file", boardDto.getFileDto()); // 모델에 첨부파일 정보 추가 (있을 경우)
-        return "board/detail.html"; // 상세 뷰 반환
+        BoardDto boardDto = boardService.getPost(id);
+        List<CommentDto> comments = commentService.getCommentsByBoardId(id);
+        model.addAttribute("post", boardDto);
+        model.addAttribute("file", boardDto.getFileDto());
+        model.addAttribute("comments", comments);
+        return "board/detail.html";
+    }
+
+    // 댓글 작성
+    @PostMapping("/post/{id}/comment")
+    public String addComment(@PathVariable("id") Long boardId, @ModelAttribute CommentDto commentDto) {
+        commentDto.setBoardId(boardId);
+        commentService.saveComment(commentDto);
+        return "redirect:/post/" + boardId;
     }
 
     // 게시글 수정 페이지로 이동: 특정 ID의 게시글을 수정하기 위한 페이지 제공
@@ -133,4 +153,15 @@ public class BoardController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileDto.getOrigFilename() + "\"")  // 다운로드 시 원래 파일 이름으로 설정
                 .body(resource);  // 응답 본문에 리소스 추가
     }
+
+    @PostMapping("/post/{id}/like") // 좋아요 기능
+    @ResponseBody
+    public ResponseEntity<Integer> likePost(@PathVariable("id") Long id, HttpSession session) {
+        String userId = session.getId(); // 세션 ID를 사용자 ID로 사용
+        boolean liked = boardService.toggleLike(id, userId);
+        BoardDto boardDto = boardService.getPost(id);
+        return ResponseEntity.ok(boardDto.getLikeCount());
+    }
+
+
 }

@@ -18,6 +18,8 @@ public class BoardDto {
     private LocalDateTime createdDate; // 생성일
     private LocalDateTime modifiedDate; // 수정일
     private FileDto fileDto; // 첨부파일 정보
+    private int likeCount; // 좋아요 수 필드 추가
+
 
     public Board toEntity() {  // BoardDto를 Board 엔티티로 변환하는 메서드
         Board build = Board.builder()
@@ -31,8 +33,7 @@ public class BoardDto {
     }
 
     @Builder
-    public BoardDto(Long id, String author, String title, String content, Long fileId, LocalDateTime createdDate, LocalDateTime modifiedDate, FileDto fileDto) {        this.id = id;
-        this.id = id; // ID 초기화
+    public BoardDto(Long id, String author, String title, String content, Long fileId, LocalDateTime createdDate, LocalDateTime modifiedDate, FileDto fileDto, int likeCount) {        this.id = id; // ID 초기화
         this.author = author; // 작성자 초기화
         this.title = title; // 제목 초기화
         this.content = content; // 내용 초기화
@@ -40,5 +41,7 @@ public class BoardDto {
         this.createdDate = createdDate; // 생성일 초기화
         this.modifiedDate = modifiedDate; // 수정일 초기화
         this.fileDto = fileDto; // 파일 DTO 초기화
+        this.likeCount = likeCount; // 좋아요 개수 초기화
+
     }
 }

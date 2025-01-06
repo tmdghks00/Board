@@ -26,7 +26,9 @@ public class UserService {
         if (!userDto.isPasswordMatch()) {
             return "비밀번호가 일치하지 않습니다.";
         }
-
+        if (!userDto.isValidNickname()) {
+            return "닉네임은 2~20자의 한글, 영문, 숫자만 가능합니다.";
+        }
         // 아이디 중복 검사
         if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             return "이미 사용중인 아이디입니다.";
@@ -36,9 +38,10 @@ public class UserService {
         User user = User.builder()
                 .username(userDto.getUsername())
                 .password(userDto.getPassword())
+                .nickname(userDto.getNickname())
                 .build();
         userRepository.save(user);
-        return null; // 성공 시 null 반환
+        return null;
     }
 
     @Transactional(readOnly = true)
@@ -47,4 +50,45 @@ public class UserService {
                 .map(user -> user.getPassword().equals(userDto.getPassword()))
                 .orElse(false);
     }
+
+    // 회원정보 조회
+    @Transactional(readOnly = true)
+    public UserDto getUserInfo(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        return UserDto.builder()
+                .username(username)
+                .nickname(user.getNickname())
+                .build();
+    }
+
+    // 회원정보 수정
+    @Transactional
+    public String updateUserInfo(String username, UserDto userDto) {
+        if (!userDto.isValidNickname()) {
+            return "닉네임은 2~20자의 한글, 영문, 숫자만 가능합니다.";
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.updateNickname(userDto.getNickname());
+        return null;
+    }
+
+    // 회원 탈퇴
+    @Transactional
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        userRepository.delete(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
 }

@@ -5,9 +5,7 @@ import com.example.communityboard.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -42,6 +40,31 @@ public class UserController {
         return "redirect:/boards";
     }
 
+    // 비밀번호 변경 페이지
+    @GetMapping("/user/change-password")
+    public String changePasswordForm() {
+        return "user/change-password";
+    }
+
+    // 비밀번호 변경 처리
+    @PostMapping("/user/change-password")
+    public String changePassword(@RequestParam String currentPassword,
+                                 @RequestParam String newPassword,
+                                 @RequestParam String confirmPassword,
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) {
+        String username = (String) session.getAttribute("username");
+        String errorMessage = userService.changePassword(username, currentPassword, newPassword, confirmPassword);
+
+        if (errorMessage != null) {
+            redirectAttributes.addFlashAttribute("passwordError", errorMessage);
+            return "redirect:/user/change-password";
+        }
+
+        redirectAttributes.addFlashAttribute("passwordSuccess", "비밀번호가 성공적으로 변경되었습니다.");
+        return "redirect:/user/change-password";
+    }
+
     // 회원 탈퇴 처리
     @PostMapping("/user/delete")
     public String delete(HttpSession session) {
@@ -50,7 +73,6 @@ public class UserController {
         session.removeAttribute("username");
         return "redirect:/login";
     }
-
 
     @GetMapping("/login")
     public String loginForm() {
@@ -83,7 +105,7 @@ public class UserController {
         return "redirect:/login";
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpSession session) {
         session.removeAttribute("username");
         return "redirect:/login";

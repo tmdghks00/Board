@@ -91,4 +91,30 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
+    @Transactional
+    public String changePassword(String username, String currentPassword, String newPassword, String confirmPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!user.getPassword().equals(currentPassword)) {
+            return "현재 비밀번호가 일치하지 않습니다.";
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            return "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.";
+        }
+
+        if (!isValidPassword(newPassword)) {
+            return "새 비밀번호는 8글자 이상이며 영문, 숫자, 특수문자를 모두 포함해야 합니다.";
+        }
+
+        user.updatePassword(newPassword);
+        return null;
+    }
+
+    private boolean isValidPassword(String password) {
+        return password != null &&
+                password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+    }
+
 }

@@ -9,37 +9,58 @@
 <header th:replace="~{common/header.html}"></header>
 <div class="container">
     <h2 class="mt-4 mb-4">회원정보 수정</h2>
+    <div th:if="${editError}" class="alert alert-danger" th:text="${editError}"></div>
+    <div th:if="${editSuccess}" class="alert alert-success" th:text="${editSuccess}"></div>
+    <div th:if="${passwordError}" class="alert alert-danger" th:text="${passwordError}"></div>
+    <div th:if="${passwordSuccess}" class="alert alert-success" th:text="${passwordSuccess}"></div>
+
     <form th:action="@{/user/edit}" method="post">
         <div class="form-group row">
             <label for="inputUsername" class="col-sm-2 col-form-label"><strong>아이디</strong></label>
             <div class="col-sm-10">
-                <input
-                        type="text"
-                        name="username"
-                        class="form-control"
-                        id="inputUsername"
-                        th:value="${user.username}"
-                        readonly
-                />
+                <input type="text" name="username" class="form-control" id="inputUsername"
+                       th:value="${user != null ? user.username : ''}" readonly />
             </div>
         </div>
         <div class="form-group row">
             <label for="inputNickname" class="col-sm-2 col-form-label"><strong>닉네임</strong></label>
             <div class="col-sm-10">
-                <input
-                        type="text"
-                        name="nickname"
-                        class="form-control"
-                        id="inputNickname"
-                        th:value="${user.nickname}"
-                        required
-                />
+                <input type="text" name="nickname" class="form-control" id="inputNickname"
+                       th:value="${user != null ? user.nickname : ''}" required />
             </div>
         </div>
         <div class="row">
             <div class="col-auto mr-auto"></div>
             <div class="col-auto">
-                <input class="btn btn-primary" type="submit" role="button" value="수정" />
+                <input class="btn btn-primary" type="submit" role="button" value="정보 수정" />
+            </div>
+        </div>
+    </form>
+
+    <h3 class="mt-5 mb-3">비밀번호 변경</h3>
+    <form th:action="@{/user/change-password}" method="post">
+        <div class="form-group row">
+            <label for="currentPassword" class="col-sm-2 col-form-label"><strong>현재 비밀번호</strong></label>
+            <div class="col-sm-10">
+                <input type="password" name="currentPassword" class="form-control" id="currentPassword" required />
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="newPassword" class="col-sm-2 col-form-label"><strong>새 비밀번호</strong></label>
+            <div class="col-sm-10">
+                <input type="password" name="newPassword" class="form-control" id="newPassword" required />
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="confirmPassword" class="col-sm-2 col-form-label"><strong>새 비밀번호 확인</strong></label>
+            <div class="col-sm-10">
+                <input type="password" name="confirmPassword" class="form-control" id="confirmPassword" required />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-auto mr-auto"></div>
+            <div class="col-auto">
+                <input class="btn btn-primary" type="submit" role="button" value="비밀번호 변경" />
             </div>
         </div>
     </form>

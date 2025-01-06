@@ -110,6 +110,8 @@ public class BoardController {
         model.addAttribute("file", boardDto.getFileDto());
         model.addAttribute("comments", comments);
         model.addAttribute("currentUserNickname", user.getNickname());
+        // 추가: 현재 로그인한 사용자의 username을 모델에 추가
+        model.addAttribute("currentUsername", username);
         return "board/detail.html";
     }
     // 댓글 작성
@@ -122,10 +124,20 @@ public class BoardController {
 
     // 게시글 수정 페이지로 이동: 특정 ID의 게시글을 수정하기 위한 페이지 제공
     @GetMapping("/post/edit/{id}")
-    public String edit(@PathVariable("id") Long id, Model model) {
+    public String edit(@PathVariable("id") Long id, Model model, HttpSession session) {
         BoardDto boardDto = boardService.getPost(id); // ID로 게시글 정보 가져오기
+        String username = (String) session.getAttribute("username"); // 세션에서 username 가져오기
+
+        if (username != null) {
+            User user = userService.findByUsername(username);
+            model.addAttribute("username", user.getUsername());
+            model.addAttribute("nickname", user.getNickname());
+        } else {
+            model.addAttribute("username", "Anonymous"); // 세션 정보 없을 경우 기본값
+        }
+
         model.addAttribute("post", boardDto); // 모델에 게시글 정보 추가
-        return "board/edit.html"; // 수정 뷰 반환
+        return "user/edit.html"; // 수정 뷰 반환
     }
 
     // 게시글 수정 처리: 수정된 정보를 저장함

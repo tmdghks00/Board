@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -16,6 +17,40 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+    // 회원정보 수정 페이지
+    @GetMapping("/user/edit")
+    public String editForm(HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        UserDto userDto = userService.getUserInfo(username);
+        model.addAttribute("user", userDto);
+        return "user/edit";
+    }
+
+    // 회원정보 수정 처리
+    @PostMapping("/user/edit")
+    public String edit(@ModelAttribute UserDto userDto, HttpSession session, RedirectAttributes redirectAttributes) {
+        String username = (String) session.getAttribute("username");
+        String errorMessage = userService.updateUserInfo(username, userDto);
+
+        if (errorMessage != null) {
+            redirectAttributes.addFlashAttribute("editError", errorMessage);
+            return "redirect:/user/edit";
+        }
+
+        redirectAttributes.addFlashAttribute("editSuccess", "회원정보가 수정되었습니다.");
+        return "redirect:/boards";
+    }
+
+    // 회원 탈퇴 처리
+    @PostMapping("/user/delete")
+    public String delete(HttpSession session) {
+        String username = (String) session.getAttribute("username");
+        userService.deleteUser(username);
+        session.removeAttribute("username");
+        return "redirect:/login";
+    }
+
 
     @GetMapping("/login")
     public String loginForm() {

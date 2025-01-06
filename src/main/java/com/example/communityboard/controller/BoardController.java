@@ -1,12 +1,14 @@
 package com.example.communityboard.controller;
 
 // 필요한 클래스 임포트
+import com.example.communityboard.domain.entity.User;
 import com.example.communityboard.dto.BoardDto;
 import com.example.communityboard.dto.CommentDto;
 import com.example.communityboard.dto.FileDto;
 import com.example.communityboard.service.BoardService;
 import com.example.communityboard.service.CommentService;
 import com.example.communityboard.service.FileService;
+import com.example.communityboard.service.UserService;
 import com.example.communityboard.util.MD5Generator;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -37,13 +39,15 @@ public class BoardController {
     private final BoardService boardService; // 게시판 관련 서비스
     private final FileService fileService;   // 파일 관련 서비스
     private final CommentService commentService;
+    private final UserService userService; // 추가
 
 
     // 생성자 주입을 통해 서비스 인스턴스를 초기화
-    public BoardController(BoardService boardService, FileService fileService, CommentService commentService) {
+    public BoardController(BoardService boardService, FileService fileService, CommentService commentService, UserService userService) {
         this.boardService = boardService;
         this.fileService = fileService;
         this.commentService = commentService;
+        this.userService = userService;
     }
 
     // 게시판 목록 조회 (페이징 적용)
@@ -62,7 +66,11 @@ public class BoardController {
 
     // 게시글 작성 처리: 파일 업로드와 게시글 정보를 함께 처리
     @PostMapping("/post")
-    public String write(@RequestParam("file") MultipartFile files, BoardDto boardDto) {
+    public String write(@RequestParam("file") MultipartFile files, BoardDto boardDto, HttpSession session) {
+        String username = (String) session.getAttribute("username");
+        User user = userService.findByUsername(username);
+        boardDto.setAuthor(user.getNickname());  // 작성자를 현재 로그인한 사용자의 닉네임으로 설정
+
         try {
             String origFilename = files.getOriginalFilename(); // 원래 파일 이름 가져오기
             String filename = new MD5Generator(origFilename).toString(); // MD5 해시로 파일 이름 생성
@@ -93,15 +101,17 @@ public class BoardController {
 
     // 게시글 상세 조회 (댓글 목록 포함)
     @GetMapping("/post/{id}")
-    public String detail(@PathVariable("id") Long id, Model model) {
+    public String detail(@PathVariable("id") Long id, Model model, HttpSession session) {
         BoardDto boardDto = boardService.getPost(id);
         List<CommentDto> comments = commentService.getCommentsByBoardId(id);
+        String username = (String) session.getAttribute("username");
+        User user = userService.findByUsername(username);
         model.addAttribute("post", boardDto);
         model.addAttribute("file", boardDto.getFileDto());
         model.addAttribute("comments", comments);
+        model.addAttribute("currentUserNickname", user.getNickname());
         return "board/detail.html";
     }
-
     // 댓글 작성
     @PostMapping("/post/{id}/comment")
     public String addComment(@PathVariable("id") Long boardId, @ModelAttribute CommentDto commentDto) {

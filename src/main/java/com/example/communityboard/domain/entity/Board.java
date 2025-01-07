@@ -51,12 +51,16 @@ public class Board {
     @LastModifiedDate
     private LocalDateTime modifiedDate;
 
+    @Column
+    private String username;  // 작성자의 실제 로그인 아이디 저장
+
     @Builder
-    public Board(Long id, String author, String title, String content, Long fileId) {
+    public Board(Long id, String author, String title, String content, String username, Long fileId) {
         this.id = id; // 게시글 ID 초기화
         this.author = author; // 작성자 초기화
         this.title = title; // 제목 초기화
         this.content = content; // 내용 초기화
+        this.username = username;
         this.fileId = fileId; // 첨부파일 ID 초기화
     }
 

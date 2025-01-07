@@ -137,7 +137,7 @@ public class BoardController {
         }
 
         model.addAttribute("post", boardDto); // 모델에 게시글 정보 추가
-        return "user/edit.html"; // 수정 뷰 반환
+        return "user/edit-post"; // 수정 뷰 반환
     }
 
     // 게시글 수정 처리: 수정된 정보를 저장함

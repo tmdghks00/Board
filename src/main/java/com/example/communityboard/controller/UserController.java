@@ -58,11 +58,11 @@ public class UserController {
 
         if (errorMessage != null) {
             redirectAttributes.addFlashAttribute("passwordError", errorMessage);
-            return "redirect:/user/change-password";
+            return "redirect:/user/edit"; // 수정된 경로
         }
 
         redirectAttributes.addFlashAttribute("passwordSuccess", "비밀번호가 성공적으로 변경되었습니다.");
-        return "redirect:/user/change-password";
+        return "redirect:/user/edit"; // 수정된 경로
     }
 
     // 회원 탈퇴 처리

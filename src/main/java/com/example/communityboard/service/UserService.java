@@ -113,8 +113,11 @@ public class UserService {
     }
 
     private boolean isValidPassword(String password) {
-        return password != null &&
-                password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+        if (password == null || password.length() < 8) { // 최소 8자 이상
+            return false;
+        }
+        return password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
     }
+
 
 }

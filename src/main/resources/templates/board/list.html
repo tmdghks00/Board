@@ -45,6 +45,7 @@
                 <th scope="col">번호</th>
                 <th scope="col">제목</th>
                 <th scope="col">작성자</th>
+                <th scope="col">조회수</th>
                 <th scope="col">작성일</th>
             </tr>
             </thead>
@@ -56,10 +57,14 @@
                 <td>
                     <a th:href="@{'/post/' + ${post.id}}">
                         <span th:text="${post.title}"></span>
+                        <span class="badge badge-secondary" th:text="${'[' + post.commentCount + ']'}"></span>
                     </a>
                 </td>
                 <td>
                     <span th:text="${post.author}"></span>
+                </td>
+                <td>
+                    <span th:text="${post.viewCount != null ? post.viewCount : 0}"></span>
                 </td>
                 <td>
                     <span th:text="${#temporals.format(post.createdDate, 'yyyy-MM-dd HH:mm')}"></span>

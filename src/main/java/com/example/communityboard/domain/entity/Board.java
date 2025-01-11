@@ -54,14 +54,19 @@ public class Board {
     @Column
     private String username;  // 작성자의 실제 로그인 아이디 저장
 
+    @Column(nullable = false)
+    private Integer viewCount = 0;  // null이 아닌 0으로 초기화
+
     @Builder
-    public Board(Long id, String author, String title, String content, String username, Long fileId) {
-        this.id = id; // 게시글 ID 초기화
-        this.author = author; // 작성자 초기화
-        this.title = title; // 제목 초기화
-        this.content = content; // 내용 초기화
+    public Board(Long id, String author, String title, String content, String username, Long fileId) {   this.id = id; // 게시글 ID 초기화
+        this.id = id;
+        this.author = author;
+        this.title = title;
+        this.content = content;
         this.username = username;
-        this.fileId = fileId; // 첨부파일 ID 초기화
+        this.fileId = fileId;
+        this.viewCount = 0;
+
     }
 
     public void incrementLikeCount() {
@@ -92,6 +97,26 @@ public class Board {
 
     public int getLikeCount() {
         return likeCount == null ? 0 : likeCount;
+    }
+
+    public void incrementViewCount() {
+        this.viewCount = (this.viewCount == null) ? 1 : this.viewCount + 1;
+    }
+
+
+    // 댓글 수를 반환하는 메서드 추가
+    public int getCommentCount() {
+        return comments.size();
+    }
+
+    // getter 수정
+    public Integer getViewCount() {
+        return viewCount != null ? viewCount : 0;
+    }
+
+    // setViewCount 메서드 추가
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
     }
 
 

@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional; // Optional import
 
 // 이 클래스는 게시판의 요청을 처리하는 컨트롤러입니다.
 @Controller
@@ -58,6 +59,7 @@ public class BoardController {
         return "board/list.html";
     }
 
+
     // 게시글 작성 페이지로 이동
     @GetMapping("/post")
     public String post() {
@@ -66,8 +68,7 @@ public class BoardController {
 
     // 게시글 작성 처리: 파일 업로드와 게시글 정보를 함께 처리
     @PostMapping("/post")
-    public String write(@RequestParam("file") MultipartFile files, BoardDto boardDto, HttpSession session) {
-        String username = (String) session.getAttribute("username");
+    public String write(@RequestParam("file") MultipartFile files, BoardDto boardDto, HttpSession session) {        String username = (String) session.getAttribute("username");
         User user = userService.findByUsername(username);
         boardDto.setAuthor(user.getNickname());  // 작성자를 현재 로그인한 사용자의 닉네임으로 설정
 
@@ -91,29 +92,31 @@ public class BoardController {
             fileDto.setFilePath(filePath); // 파일 경로 설정
 
             Long fileId = fileService.saveFile(fileDto); // 파일 정보 저장 후 ID 반환
-            boardDto.setFileId(fileId); // 게시글 DTO에 파일 ID 설정
+            boardDto.setFileId(fileId); // Optional 없이 직접 Long 값을 설정
             boardService.savePost(boardDto); // 게시글 저장
         } catch (Exception e) {
-            e.printStackTrace(); // 예외 발생 시 스택 트레이스 출력
+            e.printStackTrace();
         }
-        return "redirect:/"; // 작성 후 루트 URL로 리다이렉트
+        return "redirect:/";
     }
 
     // 게시글 상세 조회 (댓글 목록 포함)
     @GetMapping("/post/{id}")
     public String detail(@PathVariable("id") Long id, Model model, HttpSession session) {
         BoardDto boardDto = boardService.getPost(id);
+        boardService.incrementViewCount(id); // 조회수 증가
         List<CommentDto> comments = commentService.getCommentsByBoardId(id);
         String username = (String) session.getAttribute("username");
         User user = userService.findByUsername(username);
+
         model.addAttribute("post", boardDto);
         model.addAttribute("file", boardDto.getFileDto());
         model.addAttribute("comments", comments);
         model.addAttribute("currentUserNickname", user.getNickname());
-        // 추가: 현재 로그인한 사용자의 username을 모델에 추가
         model.addAttribute("currentUsername", username);
         return "board/detail.html";
     }
+
     // 댓글 작성
     @PostMapping("/post/{id}/comment")
     public String addComment(@PathVariable("id") Long boardId, @ModelAttribute CommentDto commentDto) {

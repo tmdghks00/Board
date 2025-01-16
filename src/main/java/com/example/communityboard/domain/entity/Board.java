@@ -134,4 +134,8 @@ public class Board {
             this.commentCount--;
         }
     }
+
+    public void setUsername(String username) {  // setUsername() 메서드 추가
+        this.username = username;
+    }
 }

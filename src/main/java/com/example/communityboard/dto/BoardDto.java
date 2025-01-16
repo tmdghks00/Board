@@ -22,6 +22,8 @@ public class BoardDto {
     private int likeCount; // 좋아요 수 필드 추가
     private Integer viewCount;
     private int commentCount;
+    private String username; // username 필드 추가
+
 
     public Board toEntity() {  // BoardDto를 Board 엔티티로 변환하는 메서드
         Board build = Board.builder()
@@ -37,7 +39,7 @@ public class BoardDto {
     @Builder
     public BoardDto(Long id, String author, String title, String content, Long fileId,
                     LocalDateTime createdDate, LocalDateTime modifiedDate, FileDto fileDto,
-                    int likeCount, Integer viewCount, int commentCount) {
+                    int likeCount, Integer viewCount, int commentCount, String username) { // username 추가
         this.id = id;
         this.author = author;
         this.title = title;
@@ -49,5 +51,7 @@ public class BoardDto {
         this.likeCount = likeCount;
         this.viewCount = viewCount;
         this.commentCount = commentCount;
+        this.username = username; // username 설정
+
     }
 }

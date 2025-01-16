@@ -22,8 +22,25 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BoardDto> getBoardList(Pageable pageable) {
-        Page<Board> boardPage = boardRepository.findAll(pageable);
+    public Page<BoardDto> getBoardList(Pageable pageable, String sortBy) {
+        Page<Board> boardPage;
+        if (sortBy != null) {
+            switch (sortBy) {
+                case "latest":
+                    boardPage = boardRepository.findAllByOrderByCreatedDateDesc(pageable);
+                    break;
+                case "comments":
+                    boardPage = boardRepository.findAllByOrderByCommentCountDesc(pageable);
+                    break;
+                case "views":
+                    boardPage = boardRepository.findAllByOrderByViewCountDesc(pageable);
+                    break;
+                default:
+                    boardPage = boardRepository.findAll(pageable);
+            }
+        } else {
+            boardPage = boardRepository.findAll(pageable);
+        }
         return boardPage.map(this::convertEntityToDto);
     }
 
@@ -91,4 +108,29 @@ public class BoardService {
         board.incrementViewCount();
         boardRepository.save(board);
     }
+    @Transactional(readOnly = true)
+    public Page<BoardDto> searchBoards(String keyword, Pageable pageable) {
+        Page<Board> boardPage = boardRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
+        return boardPage.map(this::convertEntityToDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BoardDto> getBoardsSortedByCommentCount(Pageable pageable) {
+        Page<Board> boardPage = boardRepository.findAllSortedByCommentCount(pageable);
+        return boardPage.map(this::convertEntityToDto);
+    }
+
+
+    public Page<BoardDto> getBoardsSortedByViewCount(Pageable pageable) {
+        return boardRepository.findAllByOrderByViewCountDesc(pageable)
+                .map(this::convertEntityToDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BoardDto> searchBoardsByTitle(String titleKeyword, Pageable pageable) {
+        Page<Board> boardPage = boardRepository.findByTitleContaining(titleKeyword, pageable);
+        return boardPage.map(this::convertEntityToDto);
+    }
+
+
 }

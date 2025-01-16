@@ -41,8 +41,9 @@ public class Board {
     @Column
     private Integer likeCount = 0;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Comment> comments = new ArrayList<>();
+
 
     @CreatedDate
     @Column(updatable = false)
@@ -56,6 +57,9 @@ public class Board {
 
     @Column(nullable = false)
     private Integer viewCount = 0;  // null이 아닌 0으로 초기화
+
+    @Column(nullable = false)
+    private Integer commentCount = 0; // 댓글 수 기본값
 
     @Builder
     public Board(Long id, String author, String title, String content, String username, Long fileId) {   this.id = id; // 게시글 ID 초기화
@@ -119,5 +123,15 @@ public class Board {
         this.viewCount = viewCount;
     }
 
+    // 댓글 수를 증가시키는 메서드
+    public void incrementCommentCount() {
+        this.commentCount = (this.commentCount == null) ? 1 : this.commentCount + 1;
+    }
 
+    // 댓글 수를 감소시키는 메서드
+    public void decrementCommentCount() {
+        if (this.commentCount != null && this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
 }

@@ -34,6 +34,9 @@ public class CommentService {
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
+        // 댓글 수 증가
+        board.incrementCommentCount();
+        boardRepository.save(board);
         return convertEntityToDto(savedComment);
     }
 
@@ -54,5 +57,20 @@ public class CommentService {
                 .createdDate(comment.getCreatedDate())
                 .boardId(comment.getBoard().getId())
                 .build();
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid comment ID"));
+
+        Board board = comment.getBoard();
+
+        // 댓글 삭제
+        commentRepository.delete(comment);
+
+        // 댓글 수 감소
+        board.decrementCommentCount();
+        boardRepository.save(board);
     }
 }

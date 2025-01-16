@@ -53,11 +53,31 @@ public class BoardController {
 
     // 게시판 목록 조회 (페이징 적용)
     @GetMapping({"", "/", "/boards"})
-    public String list(Model model, @PageableDefault(size = 10) Pageable pageable) {
-        Page<BoardDto> boardDtoPage = boardService.getBoardList(pageable);
+    public String list(Model model, @PageableDefault(size = 10) Pageable pageable,
+                       @RequestParam(required = false) String searchKeyword,
+                       @RequestParam(required = false) String sortBy) {
+        Page<BoardDto> boardDtoPage;
+
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
+            boardDtoPage = boardService.searchBoardsByTitle(searchKeyword, pageable);
+        } else {
+            if ("comments".equals(sortBy)) {
+                boardDtoPage = boardService.getBoardsSortedByCommentCount(pageable); // 댓글 정렬 메서드 호출
+            } else if ("views".equals(sortBy)) {
+                boardDtoPage = boardService.getBoardsSortedByViewCount(pageable);
+            } else {
+                boardDtoPage = boardService.getBoardList(pageable, sortBy);
+            }
+        }
+
         model.addAttribute("postList", boardDtoPage);
+        model.addAttribute("searchKeyword", searchKeyword);
+        model.addAttribute("sortBy", sortBy);
         return "board/list.html";
     }
+
+
+
 
 
     // 게시글 작성 페이지로 이동

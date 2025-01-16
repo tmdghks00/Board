@@ -88,9 +88,10 @@ public class BoardController {
 
     // 게시글 작성 처리: 파일 업로드와 게시글 정보를 함께 처리
     @PostMapping("/post")
-    public String write(@RequestParam("file") MultipartFile files, BoardDto boardDto, HttpSession session) {        String username = (String) session.getAttribute("username");
+    public String write(@RequestParam("file") MultipartFile files, BoardDto boardDto, HttpSession session) {
+        String username = (String) session.getAttribute("username");
         User user = userService.findByUsername(username);
-        boardDto.setAuthor(user.getNickname());  // 작성자를 현재 로그인한 사용자의 닉네임으로 설정
+        boardDto.setAuthor(user.getNickname());
 
         try {
             String origFilename = files.getOriginalFilename(); // 원래 파일 이름 가져오기
@@ -111,9 +112,9 @@ public class BoardController {
             fileDto.setFilename(filename); // 해시된 파일 이름 설정
             fileDto.setFilePath(filePath); // 파일 경로 설정
 
-            Long fileId = fileService.saveFile(fileDto); // 파일 정보 저장 후 ID 반환
-            boardDto.setFileId(fileId); // Optional 없이 직접 Long 값을 설정
-            boardService.savePost(boardDto); // 게시글 저장
+            Long fileId = fileService.saveFile(fileDto);
+            boardDto.setFileId(fileId);
+            boardService.savePost(boardDto, username); // 게시글 저장 (username 추가)
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -133,7 +134,7 @@ public class BoardController {
         model.addAttribute("file", boardDto.getFileDto());
         model.addAttribute("comments", comments);
         model.addAttribute("currentUserNickname", user.getNickname());
-        model.addAttribute("currentUsername", username);
+        model.addAttribute("currentUsername", username); // 현재 로그인한 사용자의 username을 모델에 추가
         return "board/detail.html";
     }
 
@@ -165,9 +166,10 @@ public class BoardController {
 
     // 게시글 수정 처리: 수정된 정보를 저장함
     @PutMapping("/post/edit/{id}")
-    public String update(BoardDto boardDto) {
-        boardService.savePost(boardDto); // 수정된 게시글 정보 저장
-        return "redirect:/"; // 수정 후 루트 URL로 리다이렉트
+    public String update(BoardDto boardDto, HttpSession session) {
+        String username = (String) session.getAttribute("username"); // 세션에서 username 가져오기
+        boardService.savePost(boardDto, username); // username과 함께 savePost 호출
+        return "redirect:/";
     }
 
     // 게시글 삭제 처리: 특정 ID의 게시글 삭제함

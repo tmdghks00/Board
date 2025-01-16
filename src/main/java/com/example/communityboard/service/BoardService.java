@@ -59,8 +59,10 @@ public class BoardService {
     }
 
     @Transactional
-    public Long savePost(BoardDto boardDto) {
-        return boardRepository.save(boardDto.toEntity()).getId();
+    public Long savePost(BoardDto boardDto, String username) { // username 매개변수 추가
+        Board board = boardDto.toEntity();
+        board.setUsername(username); // username 설정
+        return boardRepository.save(board).getId();
     }
 
     @Transactional(readOnly = true)
@@ -84,6 +86,7 @@ public class BoardService {
                 .viewCount(board.getViewCount())
                 .commentCount(board.getCommentCount())
                 .fileDto(fileDto)
+                .username(board.getUsername()) // username 설정
                 .build();
     }
 

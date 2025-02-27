@@ -29,7 +29,7 @@ public class BoardDto {
         Board build = Board.builder()
                 .id(id) // ID 설정
                 .author(author) // 작성자 설정
-                .title(title) // 제목 설정
+                    .title(title) // 제목 설정
                 .content(content) // 내용 설정
                 .fileId(fileId) // Optional 제거
                 .build(); // 엔티티 빌드

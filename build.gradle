@@ -34,7 +34,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     // Bootstrap
-    implementation 'org.webjars:bootstrap:4.5.0'
+    implementation 'org.webjars:bootstrap:5.0.0'
 }
 
 tasks.named('test') {

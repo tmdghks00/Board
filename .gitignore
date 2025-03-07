@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Example Configuration File
+application.properties.example

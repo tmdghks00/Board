@@ -1,3 +1,4 @@
+# 프로젝트 설정 파일
 HELP.md
 .gradle
 build/
@@ -18,7 +19,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -36,5 +37,23 @@ out/
 ### VS Code ###
 .vscode/
 
-# Example Configuration File
-application.properties.example
+# ✅ **환경 설정 관련 파일들 (커밋 금지)**
+src/main/resources/application.properties  # 실제 환경 변수 파일 (비밀번호 보호)
+.env                                       # 환경 변수 파일 (보안 유지)
+
+# ✅ **예제 파일 (커밋 허용)**
+application.properties.example  # 설정 가이드를 제공하는 예제 파일 (커밋 가능)
+
+# ✅ **데이터베이스 관련 파일들 제외**
+*.sql  # MySQL/MariaDB 등 DB 덤프 파일 제외
+*.db   # SQLite 등의 로컬 DB 파일 제외
+
+# ✅ **로그 및 캐시 파일 제외**
+*.log
+/logs/
+nohup.out
+
+# ✅ **OS별 불필요한 파일 제외**
+.DS_Store  # macOS
+Thumbs.db  # Windows
+desktop.ini  # Windows
